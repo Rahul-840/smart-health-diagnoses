@@ -1,7 +1,10 @@
 streamlit
-openai>=1.0.0
-PyPDF2
+openai
 python-dotenv
-bcrypt
+pdfplumber
+PyPDF2
 pandas
-plotly
+bcrypt
+sentence-transformers
+torch
+numpy
