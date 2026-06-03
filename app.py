@@ -75,8 +75,16 @@ st.markdown(
                     linear-gradient(180deg, #07111f 0%, #0f172a 60%, #020617 100%);
         color: #e5e7eb;
     }
-    .block-container { max-width: 1280px; padding-top: 1rem; padding-bottom: 2rem; }
+    /* Keep Streamlit header visible so sidebar collapse/open button works.
+       Add top padding so header does not cover dashboard/tabs. */
+    .block-container { max-width: 1280px; padding-top: 4.2rem; padding-bottom: 2rem; }
     #MainMenu, footer { visibility: hidden; }
+    header[data-testid="stHeader"] {
+        background: rgba(7,17,31,0.85) !important;
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(148,163,184,.12);
+    }
+    section[data-testid="stSidebar"] { padding-top: 3.2rem; }
     .topbar {
         display:flex; align-items:center; justify-content:space-between; gap:1rem;
         padding: .8rem 1rem; margin-bottom: 1rem;
