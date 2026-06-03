@@ -513,37 +513,65 @@ def tracking_page() -> None:
 
 
 def sidebar() -> None:
-    st.sidebar.title("Smart Health")
-    st.sidebar.write(f"User: **{st.session_state.user.get('username', '')}**")
-    st.sidebar.caption(f"Version: {APP_VERSION}")
-    pages = {
-        "Dashboard": "dashboard",
-        "Upload": "upload",
-        "Result": "result",
-        "Chat": "chat",
-        "Tracking": "tracking",
-        "History": "history",
-    }
-    labels = list(pages.keys())
-    current_label = next((label for label, key in pages.items() if key == st.session_state.page), "Dashboard")
-    choice = st.sidebar.radio("Menu", labels, index=labels.index(current_label))
-    if st.session_state.page != pages[choice]:
-        st.session_state.page = pages[choice]
-        st.rerun()
-    if st.sidebar.button("Logout", use_container_width=True):
-        for key in ["logged_in", "user", "page", "show_auth", "rid", "rpt_txt", "analysis"]:
-            if key in st.session_state:
-                del st.session_state[key]
-        init_state()
-        st.rerun()
+    with st.sidebar:
+        st.markdown("### 🏥 Smart Health")
+        user = st.session_state.get("user") or {}
+        st.markdown(f"**User:** {user.get('username', 'User')}")
+        st.caption(f"Version: {APP_VERSION}")
+        st.markdown("---")
+
+        if "page" not in st.session_state or not st.session_state.page:
+            st.session_state.page = "dashboard"
+
+        pages = {
+            "🏠 Dashboard": "dashboard",
+            "📄 Upload Report": "upload",
+            "🧾 Analysis Result": "result",
+            "💬 Report Chat": "chat",
+            "📊 Health Tracking": "tracking",
+            "📜 Report History": "history",
+        }
+
+        labels = list(pages.keys())
+
+        current_label = "🏠 Dashboard"
+        for label, page_key in pages.items():
+            if page_key == st.session_state.page:
+                current_label = label
+                break
+
+        selected_label = st.radio(
+            "Menu",
+            labels,
+            index=labels.index(current_label),
+            key="sidebar_menu_radio"
+        )
+
+        selected_page = pages[selected_label]
+
+        if selected_page != st.session_state.page:
+            st.session_state.page = selected_page
+            st.rerun()
+
+        st.markdown("---")
+
+        if st.button("🚪 Logout", use_container_width=True, key="sidebar_logout_btn"):
+            st.session_state.clear()
+            init_state()
+            st.rerun()
 
 
 def main() -> None:
-    if not st.session_state.logged_in:
+    init_state()
+
+    if not st.session_state.get("logged_in", False):
         home_page()
         return
+
     sidebar()
-    page = st.session_state.page
+
+    page = st.session_state.get("page", "dashboard")
+
     if page == "dashboard":
         dashboard_page()
     elif page == "upload":
