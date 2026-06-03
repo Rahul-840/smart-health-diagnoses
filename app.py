@@ -76,7 +76,7 @@ st.markdown(
         color: #e5e7eb;
     }
     .block-container { max-width: 1280px; padding-top: 1rem; padding-bottom: 2rem; }
-    #MainMenu, header, footer { visibility: hidden; }
+    #MainMenu, footer { visibility: hidden; }
     .topbar {
         display:flex; align-items:center; justify-content:space-between; gap:1rem;
         padding: .8rem 1rem; margin-bottom: 1rem;
@@ -513,6 +513,7 @@ def tracking_page() -> None:
 
 
 def sidebar() -> None:
+    # Stable sidebar navigation. Uses buttons instead of radio to avoid disabled/hanging state.
     with st.sidebar:
         st.markdown("### 🏥 Smart Health")
         user = st.session_state.get("user") or {}
@@ -520,38 +521,24 @@ def sidebar() -> None:
         st.caption(f"Version: {APP_VERSION}")
         st.markdown("---")
 
-        if "page" not in st.session_state or not st.session_state.page:
-            st.session_state.page = "dashboard"
+        if "page" not in st.session_state or not st.session_state.get("page"):
+            st.session_state["page"] = "dashboard"
 
-        pages = {
-            "🏠 Dashboard": "dashboard",
-            "📄 Upload Report": "upload",
-            "🧾 Analysis Result": "result",
-            "💬 Report Chat": "chat",
-            "📊 Health Tracking": "tracking",
-            "📜 Report History": "history",
-        }
+        menu_items = [
+            ("🏠 Dashboard", "dashboard"),
+            ("📄 Upload Report", "upload"),
+            ("🧾 Analysis Result", "result"),
+            ("💬 Report Chat", "chat"),
+            ("📊 Health Tracking", "tracking"),
+            ("📜 Report History", "history"),
+        ]
 
-        labels = list(pages.keys())
-
-        current_label = "🏠 Dashboard"
-        for label, page_key in pages.items():
-            if page_key == st.session_state.page:
-                current_label = label
-                break
-
-        selected_label = st.radio(
-            "Menu",
-            labels,
-            index=labels.index(current_label),
-            key="sidebar_menu_radio"
-        )
-
-        selected_page = pages[selected_label]
-
-        if selected_page != st.session_state.page:
-            st.session_state.page = selected_page
-            st.rerun()
+        current_page = st.session_state.get("page", "dashboard")
+        for label, page_key in menu_items:
+            button_label = f"✅ {label}" if current_page == page_key else label
+            if st.button(button_label, use_container_width=True, key=f"nav_{page_key}"):
+                st.session_state["page"] = page_key
+                st.rerun()
 
         st.markdown("---")
 
@@ -571,22 +558,21 @@ def main() -> None:
     sidebar()
 
     page = st.session_state.get("page", "dashboard")
+    routes = {
+        "dashboard": dashboard_page,
+        "upload": upload_page,
+        "result": result_page,
+        "chat": chat_page,
+        "tracking": tracking_page,
+        "history": history_page,
+    }
 
-    if page == "dashboard":
-        dashboard_page()
-    elif page == "upload":
-        upload_page()
-    elif page == "result":
-        result_page()
-    elif page == "chat":
-        chat_page()
-    elif page == "tracking":
-        tracking_page()
-    elif page == "history":
-        history_page()
-    else:
-        st.session_state.page = "dashboard"
+    page_func = routes.get(page)
+    if page_func is None:
+        st.session_state["page"] = "dashboard"
         st.rerun()
+
+    page_func()
 
 
 if __name__ == "__main__":
